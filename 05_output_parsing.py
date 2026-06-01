@@ -1,6 +1,10 @@
-"""Output parsing with structured responses - Using local Qwen2.5:7b"""
+"""Output parsing with LangChain + local Qwen2.5:7b"""
 import json
-import requests
+from langchain_core.prompts import PromptTemplate
+from langchain_ollama import OllamaLLM
+
+# Initialize local Qwen model
+llm = OllamaLLM(model="qwen2.5:7b")
 
 # Template that requests structured JSON output
 template = """Extract the following information from the text and return as JSON:
@@ -13,35 +17,30 @@ Text: {text}
 
 Return ONLY valid JSON, no other text:"""
 
+prompt = PromptTemplate(
+    input_variables=["text"],
+    template=template
+)
+
 text = """
 John Smith is a 35-year-old software engineer with expertise in Python,
 JavaScript, and cloud architecture. He has been developing software for 12 years.
 """
 
-formatted = template.format(text=text)
+formatted = prompt.format(text=text)
 print("Parsing Prompt:")
 print(formatted)
 print("\n" + "="*50 + "\n")
 
 # Call Qwen model
-response = requests.post(
-    "http://localhost:11434/api/generate",
-    json={
-        "model": "qwen2.5:7b",
-        "prompt": formatted,
-        "stream": False
-    }
-)
-
-result = response.json()
-response_text = result["response"]
+response = llm.invoke(formatted)
 print("Raw Response:")
-print(response_text)
+print(response)
 print("\n" + "="*50 + "\n")
 
 # Parse the JSON
 try:
-    parsed = json.loads(response_text)
+    parsed = json.loads(response)
     print("Parsed JSON:")
     print(json.dumps(parsed, indent=2))
 except json.JSONDecodeError as e:

@@ -1,5 +1,9 @@
-"""Chain-of-thought prompting example - Using local Qwen2.5:7b"""
-import requests
+"""Chain-of-thought prompting with LangChain + local Qwen2.5:7b"""
+from langchain_core.prompts import PromptTemplate
+from langchain_ollama import OllamaLLM
+
+# Initialize local Qwen model
+llm = OllamaLLM(model="qwen2.5:7b")
 
 # Chain-of-thought template
 template = """Solve this math problem step by step. Show your reasoning for each step.
@@ -14,24 +18,20 @@ Step 4: Verify the answer
 
 Solution:"""
 
+prompt = PromptTemplate(
+    input_variables=["problem"],
+    template=template
+)
+
 # Example problem
 problem = "If a train travels 120 miles at 60 mph, how long does the journey take?"
-formatted = template.format(problem=problem)
+formatted = prompt.format(problem=problem)
 
 print("Chain-of-Thought Prompt:")
 print(formatted)
 print("\n" + "="*50 + "\n")
 
 # Call Qwen model
-response = requests.post(
-    "http://localhost:11434/api/generate",
-    json={
-        "model": "qwen2.5:7b",
-        "prompt": formatted,
-        "stream": False
-    }
-)
-
-result = response.json()
+response = llm.invoke(formatted)
 print("Response:")
-print(result["response"])
+print(response)

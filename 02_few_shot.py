@@ -1,37 +1,48 @@
-"""Few-shot prompting example - Using local Qwen2.5:7b"""
-import requests
+"""Few-shot prompting with LangChain + local Qwen2.5:7b"""
+from langchain_core.prompts import FewShotPromptTemplate, PromptTemplate
+from langchain_ollama import OllamaLLM
 
-# Few-shot examples
-examples = """Examples:
-Text: The movie was absolutely terrible and boring.
-Sentiment: Negative
+# Initialize local Qwen model
+llm = OllamaLLM(model="qwen2.5:7b")
 
-Text: I loved it! Best film I've seen all year.
-Sentiment: Positive
+# Define examples
+examples = [
+    {
+        "input": "The movie was absolutely terrible and boring.",
+        "output": "Negative"
+    },
+    {
+        "input": "I loved it! Best film I've seen all year.",
+        "output": "Positive"
+    },
+    {
+        "input": "It was okay, nothing special.",
+        "output": "Neutral"
+    },
+]
 
-Text: It was okay, nothing special.
-Sentiment: Neutral"""
+# Create the example prompt
+example_prompt = PromptTemplate(
+    input_variables=["input", "output"],
+    template="Text: {input}\nSentiment: {output}"
+)
 
-# Create prompt with examples
-prompt = f"""{examples}
+# Create few-shot prompt template
+prompt = FewShotPromptTemplate(
+    examples=examples,
+    example_prompt=example_prompt,
+    suffix="Text: {text}\nSentiment:",
+    input_variables=["text"]
+)
 
-Text: This product exceeded my expectations!
-Sentiment:"""
-
+# Format with new input
+test_text = "This product exceeded my expectations!"
+formatted_prompt = prompt.format(text=test_text)
 print("Few-Shot Prompt:")
-print(prompt)
+print(formatted_prompt)
 print("\n" + "="*50 + "\n")
 
 # Call Qwen model
-response = requests.post(
-    "http://localhost:11434/api/generate",
-    json={
-        "model": "qwen2.5:7b",
-        "prompt": prompt,
-        "stream": False
-    }
-)
-
-result = response.json()
+response = llm.invoke(formatted_prompt)
 print("Response:")
-print(result["response"])
+print(response)

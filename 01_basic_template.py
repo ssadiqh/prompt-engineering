@@ -1,31 +1,28 @@
-"""Basic prompt template example - Using local Qwen2.5:7b"""
-import requests
+"""Basic prompt template example with LangChain + local Qwen2.5:7b"""
+from langchain_core.prompts import PromptTemplate
+from langchain_ollama import OllamaLLM
 
-# Template
+# Initialize local Qwen model
+llm = OllamaLLM(model="qwen2.5:7b")
+
+# Create a simple prompt template
 template = """You are a helpful assistant that translates English to {language}.
 
 English: {english_text}
 {language}:"""
 
-# Format the template
-language = "Spanish"
-english_text = "Hello, how are you?"
-formatted_prompt = template.format(language=language, english_text=english_text)
+prompt = PromptTemplate(
+    input_variables=["language", "english_text"],
+    template=template
+)
 
+# Format the prompt
+formatted_prompt = prompt.format(language="Spanish", english_text="Hello, how are you?")
 print("Formatted Prompt:")
 print(formatted_prompt)
 print("\n" + "="*50 + "\n")
 
-# Call local Qwen model
-response = requests.post(
-    "http://localhost:11434/api/generate",
-    json={
-        "model": "qwen2.5:7b",
-        "prompt": formatted_prompt,
-        "stream": False
-    }
-)
-
-result = response.json()
+# Use with local Qwen model
+response = llm.invoke(formatted_prompt)
 print("Response from Qwen2.5:7b:")
-print(result["response"])
+print(response)
