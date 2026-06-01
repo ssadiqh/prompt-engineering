@@ -1,6 +1,12 @@
 # LangChain Prompt Engineering Examples
 
-This guide covers practical prompt engineering techniques using LangChain with Claude.
+Practical prompt engineering techniques using **LangChain with local Qwen2.5:7b** model (via Ollama).
+
+## Prerequisites
+
+- **Ollama** installed and running locally
+- **Qwen2.5:7b** model downloaded: `ollama pull qwen2.5:7b`
+- Verify it's running: `curl http://localhost:11434/api/generate -d '{"model":"qwen2.5:7b","prompt":"hello"}'`
 
 ## Setup
 
@@ -8,10 +14,7 @@ This guide covers practical prompt engineering techniques using LangChain with C
 pip install -r requirements.txt
 ```
 
-Set your API key:
-```bash
-$env:ANTHROPIC_API_KEY = "your-api-key"
-```
+No API keys needed — everything runs locally!
 
 ## Examples Overview
 
@@ -21,7 +24,7 @@ Simple prompt template with variable substitution.
 **Key Concepts:**
 - `PromptTemplate`: Create reusable prompts with variables
 - `input_variables`: Define placeholders in your template
-- Format and pass to Claude
+- `OllamaLLM`: Use local Qwen model
 
 **Use Case:** Translation, simple text transformation, templated responses
 
@@ -98,6 +101,20 @@ python 05_output_parsing.py
 python 06_prompt_chaining.py
 ```
 
+## Architecture
+
+```
+Your Script
+    ↓
+LangChain (PromptTemplate, OllamaLLM)
+    ↓
+HTTP Request to localhost:11434
+    ↓
+Ollama Server
+    ↓
+Qwen2.5:7b Model
+```
+
 ## Key Prompt Engineering Principles
 
 1. **Be Specific**: Clear, detailed instructions produce better results
@@ -116,8 +133,26 @@ python 06_prompt_chaining.py
 - **Chain prompts**: Break complex tasks into steps
 - **Test variations**: Small wording changes can significantly impact results
 
+## Local vs Cloud Models
+
+**Local (Qwen2.5:7b via Ollama):**
+- ✅ No API keys needed
+- ✅ Runs entirely offline
+- ✅ No rate limits
+- ❌ Slower than cloud (7B is smaller model)
+- ❌ Limited by local hardware
+
+**Cloud (Claude/GPT):**
+- ✅ Faster, more capable
+- ❌ Requires API keys
+- ❌ Rate limits
+- ❌ Data sent to external servers
+
+This project uses local Qwen for learning and privacy. Swap `OllamaLLM` for `ChatAnthropic` or `ChatOpenAI` to use cloud models.
+
 ## Further Reading
 
 - [LangChain Documentation](https://python.langchain.com/)
-- [Anthropic Prompt Engineering Guide](https://docs.anthropic.com/claude/en/introduction-to-prompt-engineering)
-- [Few-Shot Prompting](https://python.langchain.com/docs/modules/model_io/prompts/examples/few_shot_examples)
+- [Ollama GitHub](https://github.com/ollama/ollama)
+- [Qwen2.5 Model Card](https://huggingface.co/Qwen/Qwen2.5-7B)
+- [Prompt Engineering Guide](https://platform.openai.com/docs/guides/prompt-engineering)
