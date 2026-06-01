@@ -1,6 +1,5 @@
-"""Chain-of-thought prompting example"""
-from langchain.prompts import PromptTemplate
-from langchain_anthropic import Anthropic
+"""Chain-of-thought prompting example - Using local Qwen2.5:7b"""
+import requests
 
 # Chain-of-thought template
 template = """Solve this math problem step by step. Show your reasoning for each step.
@@ -15,24 +14,24 @@ Step 4: Verify the answer
 
 Solution:"""
 
-prompt = PromptTemplate(
-    input_variables=["problem"],
-    template=template
-)
-
 # Example problem
 problem = "If a train travels 120 miles at 60 mph, how long does the journey take?"
-formatted = prompt.format(problem=problem)
+formatted = template.format(problem=problem)
 
 print("Chain-of-Thought Prompt:")
 print(formatted)
 print("\n" + "="*50 + "\n")
 
-client = Anthropic()
-response = client.messages.create(
-    model="claude-opus-4-8",
-    max_tokens=300,
-    messages=[{"role": "user", "content": formatted}]
+# Call Qwen model
+response = requests.post(
+    "http://localhost:11434/api/generate",
+    json={
+        "model": "qwen2.5:7b",
+        "prompt": formatted,
+        "stream": False
+    }
 )
+
+result = response.json()
 print("Response:")
-print(response.content[0].text)
+print(result["response"])

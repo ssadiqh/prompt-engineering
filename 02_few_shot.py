@@ -1,50 +1,37 @@
-"""Few-shot prompting example with LangChain"""
-from langchain.prompts import FewShotPromptTemplate, PromptTemplate
-from langchain_anthropic import Anthropic
+"""Few-shot prompting example - Using local Qwen2.5:7b"""
+import requests
 
-# Define examples
-examples = [
-    {
-        "input": "The movie was absolutely terrible and boring.",
-        "output": "Negative"
-    },
-    {
-        "input": "I loved it! Best film I've seen all year.",
-        "output": "Positive"
-    },
-    {
-        "input": "It was okay, nothing special.",
-        "output": "Neutral"
-    },
-]
+# Few-shot examples
+examples = """Examples:
+Text: The movie was absolutely terrible and boring.
+Sentiment: Negative
 
-# Create the example prompt
-example_prompt = PromptTemplate(
-    input_variables=["input", "output"],
-    template="Text: {input}\nSentiment: {output}"
-)
+Text: I loved it! Best film I've seen all year.
+Sentiment: Positive
 
-# Create few-shot prompt template
-prompt = FewShotPromptTemplate(
-    examples=examples,
-    example_prompt=example_prompt,
-    suffix="Text: {text}\nSentiment:",
-    input_variables=["text"]
-)
+Text: It was okay, nothing special.
+Sentiment: Neutral"""
 
-# Format with new input
-test_text = "This product exceeded my expectations!"
-formatted_prompt = prompt.format(text=test_text)
+# Create prompt with examples
+prompt = f"""{examples}
+
+Text: This product exceeded my expectations!
+Sentiment:"""
+
 print("Few-Shot Prompt:")
-print(formatted_prompt)
+print(prompt)
 print("\n" + "="*50 + "\n")
 
-# Call Claude
-client = Anthropic()
-response = client.messages.create(
-    model="claude-opus-4-8",
-    max_tokens=10,
-    messages=[{"role": "user", "content": formatted_prompt}]
+# Call Qwen model
+response = requests.post(
+    "http://localhost:11434/api/generate",
+    json={
+        "model": "qwen2.5:7b",
+        "prompt": prompt,
+        "stream": False
+    }
 )
+
+result = response.json()
 print("Response:")
-print(response.content[0].text)
+print(result["response"])

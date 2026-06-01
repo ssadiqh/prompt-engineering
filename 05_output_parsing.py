@@ -1,7 +1,6 @@
-"""Output parsing with structured responses"""
+"""Output parsing with structured responses - Using local Qwen2.5:7b"""
 import json
-from langchain.prompts import PromptTemplate
-from langchain_anthropic import Anthropic
+import requests
 
 # Template that requests structured JSON output
 template = """Extract the following information from the text and return as JSON:
@@ -14,29 +13,28 @@ Text: {text}
 
 Return ONLY valid JSON, no other text:"""
 
-prompt = PromptTemplate(
-    input_variables=["text"],
-    template=template
-)
-
 text = """
 John Smith is a 35-year-old software engineer with expertise in Python,
 JavaScript, and cloud architecture. He has been developing software for 12 years.
 """
 
-formatted = prompt.format(text=text)
+formatted = template.format(text=text)
 print("Parsing Prompt:")
 print(formatted)
 print("\n" + "="*50 + "\n")
 
-client = Anthropic()
-response = client.messages.create(
-    model="claude-opus-4-8",
-    max_tokens=200,
-    messages=[{"role": "user", "content": formatted}]
+# Call Qwen model
+response = requests.post(
+    "http://localhost:11434/api/generate",
+    json={
+        "model": "qwen2.5:7b",
+        "prompt": formatted,
+        "stream": False
+    }
 )
 
-response_text = response.content[0].text
+result = response.json()
+response_text = result["response"]
 print("Raw Response:")
 print(response_text)
 print("\n" + "="*50 + "\n")

@@ -1,6 +1,5 @@
-"""Role-based prompting example"""
-from langchain.prompts import PromptTemplate
-from langchain_anthropic import Anthropic
+"""Role-based prompting example - Using local Qwen2.5:7b"""
+import requests
 
 # Role-based template
 template = """You are {role}. Your expertise is in {expertise}.
@@ -9,14 +8,9 @@ User question: {question}
 
 Respond in a professional manner appropriate for a {role}."""
 
-prompt = PromptTemplate(
-    input_variables=["role", "expertise", "question"],
-    template=template
-)
-
 # Example 1: Data Scientist
 print("=== Data Scientist Response ===")
-ds_prompt = prompt.format(
+ds_prompt = template.format(
     role="Data Scientist",
     expertise="machine learning and statistical analysis",
     question="How would you approach predicting customer churn?"
@@ -24,19 +18,23 @@ ds_prompt = prompt.format(
 print(ds_prompt)
 print("\n")
 
-client = Anthropic()
-response = client.messages.create(
-    model="claude-opus-4-8",
-    max_tokens=200,
-    messages=[{"role": "user", "content": ds_prompt}]
+response = requests.post(
+    "http://localhost:11434/api/generate",
+    json={
+        "model": "qwen2.5:7b",
+        "prompt": ds_prompt,
+        "stream": False
+    }
 )
+
+result = response.json()
 print("Response:")
-print(response.content[0].text)
+print(result["response"])
 print("\n" + "="*50 + "\n")
 
 # Example 2: DevOps Engineer
 print("=== DevOps Engineer Response ===")
-devops_prompt = prompt.format(
+devops_prompt = template.format(
     role="DevOps Engineer",
     expertise="cloud infrastructure and containerization",
     question="How would you approach predicting customer churn?"
@@ -44,10 +42,15 @@ devops_prompt = prompt.format(
 print(devops_prompt)
 print("\n")
 
-response = client.messages.create(
-    model="claude-opus-4-8",
-    max_tokens=200,
-    messages=[{"role": "user", "content": devops_prompt}]
+response = requests.post(
+    "http://localhost:11434/api/generate",
+    json={
+        "model": "qwen2.5:7b",
+        "prompt": devops_prompt,
+        "stream": False
+    }
 )
+
+result = response.json()
 print("Response:")
-print(response.content[0].text)
+print(result["response"])

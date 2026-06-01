@@ -1,30 +1,31 @@
-"""Basic prompt template example with LangChain"""
-from langchain.prompts import PromptTemplate
-from langchain_anthropic import Anthropic
+"""Basic prompt template example - Using local Qwen2.5:7b"""
+import requests
 
-# Create a simple prompt template
+# Template
 template = """You are a helpful assistant that translates English to {language}.
 
 English: {english_text}
 {language}:"""
 
-prompt = PromptTemplate(
-    input_variables=["language", "english_text"],
-    template=template
-)
+# Format the template
+language = "Spanish"
+english_text = "Hello, how are you?"
+formatted_prompt = template.format(language=language, english_text=english_text)
 
-# Format the prompt
-formatted_prompt = prompt.format(language="Spanish", english_text="Hello, how are you?")
 print("Formatted Prompt:")
 print(formatted_prompt)
 print("\n" + "="*50 + "\n")
 
-# Use with Claude
-client = Anthropic()
-response = client.messages.create(
-    model="claude-opus-4-8",
-    max_tokens=100,
-    messages=[{"role": "user", "content": formatted_prompt}]
+# Call local Qwen model
+response = requests.post(
+    "http://localhost:11434/api/generate",
+    json={
+        "model": "qwen2.5:7b",
+        "prompt": formatted_prompt,
+        "stream": False
+    }
 )
-print("Response:")
-print(response.content[0].text)
+
+result = response.json()
+print("Response from Qwen2.5:7b:")
+print(result["response"])

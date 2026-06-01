@@ -1,8 +1,17 @@
-"""Prompt chaining - using output from one prompt as input to another"""
-from langchain.prompts import PromptTemplate
-from langchain_anthropic import Anthropic
+"""Prompt chaining - using output from one prompt as input to another - Using Qwen2.5:7b"""
+import requests
 
-client = Anthropic()
+def call_qwen(prompt):
+    """Helper function to call Qwen model"""
+    response = requests.post(
+        "http://localhost:11434/api/generate",
+        json={
+            "model": "qwen2.5:7b",
+            "prompt": prompt,
+            "stream": False
+        }
+    )
+    return response.json()["response"].strip()
 
 # Step 1: Generate a topic idea
 print("=== Step 1: Generate Topic ===\n")
@@ -10,18 +19,9 @@ print("=== Step 1: Generate Topic ===\n")
 step1_template = """Generate a single interesting blog post topic about {subject}.
 Return only the topic, nothing else."""
 
-step1_prompt = PromptTemplate(
-    input_variables=["subject"],
-    template=step1_template
-)
-
-step1_formatted = step1_prompt.format(subject="artificial intelligence")
-response1 = client.messages.create(
-    model="claude-opus-4-8",
-    max_tokens=100,
-    messages=[{"role": "user", "content": step1_formatted}]
-)
-topic = response1.content[0].text.strip()
+step1_prompt = step1_template.format(subject="artificial intelligence")
+print(step1_prompt)
+topic = call_qwen(step1_prompt)
 print(f"Generated Topic: {topic}\n")
 
 # Step 2: Create an outline based on the topic
@@ -37,18 +37,9 @@ Include:
 
 Format as a numbered list."""
 
-step2_prompt = PromptTemplate(
-    input_variables=["topic"],
-    template=step2_template
-)
-
-step2_formatted = step2_prompt.format(topic=topic)
-response2 = client.messages.create(
-    model="claude-opus-4-8",
-    max_tokens=200,
-    messages=[{"role": "user", "content": step2_formatted}]
-)
-outline = response2.content[0].text
+step2_prompt = step2_template.format(topic=topic)
+print(step2_prompt)
+outline = call_qwen(step2_prompt)
 print(f"Generated Outline:\n{outline}\n")
 
 # Step 3: Write the introduction
@@ -62,16 +53,7 @@ Outline:
 
 Make it engaging and set up the main points."""
 
-step3_prompt = PromptTemplate(
-    input_variables=["topic", "outline"],
-    template=step3_template
-)
-
-step3_formatted = step3_prompt.format(topic=topic, outline=outline)
-response3 = client.messages.create(
-    model="claude-opus-4-8",
-    max_tokens=150,
-    messages=[{"role": "user", "content": step3_formatted}]
-)
-introduction = response3.content[0].text
+step3_prompt = step3_template.format(topic=topic, outline=outline)
+print(step3_prompt)
+introduction = call_qwen(step3_prompt)
 print(f"Generated Introduction:\n{introduction}")
