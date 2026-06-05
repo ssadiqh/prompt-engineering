@@ -42,13 +42,13 @@ Provide examples to guide model behavior.
 
 ---
 
-### 3. **Chain-of-Thought** (`03_chain_of_thought.py`)
-Ask the model to show reasoning step-by-step.
+### 3. **Structured Reasoning** (`03_chain_of_thought.py`)
+Encourage step-by-step reasoning style for complex problems.
 
 **Key Concepts:**
-- Explicit step-by-step breakdown
-- Improves accuracy on complex reasoning
-- Model shows work, not just answers
+- Step-by-step reasoning approach
+- Improves accuracy on complex tasks
+- Structured problem-solving methodology
 
 **Use Case:** Math problems, analysis, debugging, complex logic
 
